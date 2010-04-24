@@ -24,11 +24,11 @@ var YAML = {
       ['false', /^(disabled|false|no|off)/],
       ['string', /^"(.*?)"/],
       ['string', /^'(.*?)'/],
-      ['symbol', /^:([a-zA-Z0-9\_]+)/],
-      ['float', /^(\d+\.\d+)/],
-      ['int', /^(\d+)/],
-      ['id', /^([\w ]+)/],
+      ['symbol', /^:([a-zA-Z][a-zA-Z0-9\_]*)/],
       ['doc', /^---/],
+      ['float', /^(\d+\.\d+)(?=(\s|,|:))/],
+      ['int', /^(\d+)(?=(\s|,|:))/],
+      ['id', /^([\w ]+)/],
       [',', /^,/],
       ['{', /^\{/],
       ['}', /^\}/],
@@ -119,7 +119,7 @@ var YAML = {
              peekType('dedent'))
         advance()
     }
-    var parse = function(main) {
+    var parse = function(plain) {
       if (typeof main == "undefined")
         main = false;
       switch (peek()[0]) {
@@ -132,7 +132,7 @@ var YAML = {
         case '[':
           return parseInlineList()
         case 'id':
-          if (main)
+          if (plain)
             return advanceValue()
           else
             return parseHash()
@@ -182,7 +182,7 @@ var YAML = {
         if ((peekType('id') || peekType('string') || peekType('symbol')) && (id = advanceValue())) {
           expect(':', 'expected semi-colon after id')
           ignoreSpace()
-          hash[id] = parse()
+          hash[id] = parse(true)
           ignoreWhitespace()
         }
         ++i
@@ -209,7 +209,7 @@ var YAML = {
         ignoreSpace()
         if (i) expect(',', 'expected comma')
         ignoreSpace()
-        list.push(parse())
+        list.push(parse(true))
         ignoreSpace()
         ++i
       }
