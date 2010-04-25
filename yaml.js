@@ -26,16 +26,16 @@ var YAML = {
       ['string', /^'(.*?)'/],
       ['symbol', /^:([a-zA-Z][a-zA-Z0-9\_]*)/],
       ['doc', /^---/],
-      ['float', /^(\d+\.\d+)(?=(\s|,|:))/],
-      ['int', /^(\d+)(?=(\s|,|:))/],
-      ['id', /^([\w ]+)/],
+      ['float', /^(\d+\.\d+)(?=(\s|\r|\n|,|:))/],
+      ['int', /^(\d+)(?=(\s|\r|\n|,|:))/],
       [',', /^,/],
       ['{', /^\{/],
       ['}', /^\}/],
       ['[', /^\[/],
       [']', /^\]/],
       ['-', /^\-/],
-      [':', /^[:]/],
+      [':', /^\:/],
+      ['id', /^(([^,\n\s\r\}\]:]+(:(?!( |\n|\r)))?)+)/]
     ];
     var tstring = [];
 
@@ -163,12 +163,14 @@ var YAML = {
       while (peekType('id') && (id = advanceValue())) {
         expect(':', 'expected semi-colon after id')
         ignoreSpace()
-        if (accept('indent'))
+        if (accept('indent')) {
           hash[id] = parse(),
           expect('dedent', 'hash not properly dedented')
-        else
+        } else {
           hash[id] = parse()
+        }  
         ignoreSpace()
+        console.log(tstring);
       }
       return hash
     }
@@ -192,12 +194,14 @@ var YAML = {
     var parseList = function() {
       var list = []
       while (accept('-')) {
+        console.log(tstring);
         ignoreSpace()
-        if (accept('indent'))
+        if (accept('indent')) {
           list.push(parse()),
           expect('dedent', 'list item not properly dedented')
-        else
+        } else {
           list.push(parse())
+        }  
         ignoreSpace()
       }
       return list
@@ -217,7 +221,7 @@ var YAML = {
     }
 
     this.load = function(str) {
-      tstring = tokenize(str);
+      tstring = tokenize(str + '\n');
       return parse(true);
     }
   },
